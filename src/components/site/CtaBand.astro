@@ -1,0 +1,24 @@
+---
+interface Props {
+  heading: string;
+  body?: string;
+  href?: string;
+  label?: string;
+}
+const { heading, body, href = "/services/free-consultation", label = "Book a free consultation" } = Astro.props;
+---
+
+<section class="bg-navy text-navy-foreground">
+  <div class="mx-auto flex max-w-7xl flex-col items-start gap-6 px-6 py-14 sm:flex-row sm:items-center sm:justify-between">
+    <div class="max-w-xl">
+      <h2 class="text-2xl sm:text-3xl">{heading}</h2>
+      {body && <p class="mt-2 text-navy-foreground/80">{body}</p>}
+    </div>
+    <a
+      href={href}
+      class="inline-flex h-[52px] shrink-0 items-center justify-center rounded-control bg-primary px-7 text-base font-medium text-primary-foreground no-underline transition-transform hover:-translate-y-0.5"
+    >
+      {label}
+    </a>
+  </div>
+</section>

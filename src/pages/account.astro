@@ -1,0 +1,9 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import AccountDashboard from "../components/account/AccountDashboard";
+---
+
+<SiteLayout title="My Account | Win The Job" description="Your coaching packages, credits left and upcoming sessions with Nick Fennell.">
+  <h1 class="mb-8 text-2xl font-semibold tracking-tight">My account</h1>
+  <AccountDashboard client:only="react" />
+</SiteLayout>

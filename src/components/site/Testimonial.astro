@@ -1,0 +1,31 @@
+---
+// One testimonial from the CMS, in one of three treatments so the two never look alike:
+//   "panel"   — navy fill, large quote (home, About)
+//   "outline" — white card with a blue rule (About, long form)
+//   "plain"   — quiet pull-quote, no fill (service pages)
+interface Props {
+  name: string;
+  title?: string;
+  company?: string;
+  quote: string;
+  longQuote?: string;
+  variant?: "panel" | "outline" | "plain";
+}
+const { name, title, company, quote, longQuote, variant = "plain" } = Astro.props;
+const byline = [title, company].filter(Boolean).join(", ");
+const cls = {
+  panel: "rounded-lg bg-navy p-8 text-navy-foreground sm:p-10",
+  outline: "rounded-lg border border-border border-l-4 border-l-primary bg-white p-8",
+  plain: "border-l-4 border-accent pl-5",
+}[variant];
+const quoteCls = variant === "panel" ? "text-xl leading-relaxed sm:text-2xl" : variant === "outline" ? "text-base leading-relaxed" : "text-lg leading-relaxed";
+const subCls = variant === "panel" ? "text-navy-foreground/70" : "text-muted-foreground";
+---
+
+<figure class={cls}>
+  <blockquote class={quoteCls} set:html={variant === "outline" && longQuote ? longQuote : `<p>“${quote}”</p>`} />
+  <figcaption class="mt-5 text-sm">
+    <span class="font-semibold">{name}</span>
+    {byline && <span class={subCls}> · {byline}</span>}
+  </figcaption>
+</figure>

@@ -40,5 +40,5 @@ identifiers; do not replace them with credentials.
 
 ## Dependency versions
 
-This project does not currently include a dependency lockfile. After installing dependencies,
-commit the generated `package-lock.json` so future installs can use the same resolved versions.
+`package-lock.json` pins the resolved dependencies. Use `npm ci` for a clean install from the
+lockfile.

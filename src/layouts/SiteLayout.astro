@@ -1,0 +1,399 @@
+---
+// The site chrome for every bookings page — THIS file (header/footer/nav) plus the @theme
+// token block in src/styles/global.css are what you brand. Keep the <slot name="seo-tags" />
+// in <head> and the global.css import. (If the storefront vertical is also deployed, its
+// SiteLayout won; merge nav links there instead.)
+import "../styles/global.css";
+import logoWhite from "../assets/brand/logo-white.webp";
+import MemberMenu from "../components/members/MemberMenu";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import ogImage from "../assets/brand/og-logo-1200.png";
+import { SITE_LIVE, SITE_ORIGIN, SITE_NAME } from "../data/site";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** JSON-LD nodes for this page (no prices, no street address). */
+  jsonLd?: Record<string, unknown>[];
+}
+const { title, description, jsonLd } = Astro.props;
+
+// Canonical = the launch domain + this path (no query, no trailing slash), whichever host served it.
+const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const canonical = `${SITE_ORIGIN}${path}`;
+const ogImageUrl = `${SITE_ORIGIN}${ogImage.src}`;
+const graph = jsonLd?.length ? JSON.stringify({ "@context": "https://schema.org", "@graph": jsonLd }).replace(/</g, "\\u003c") : null;
+
+const coachingPackages = [
+  { label: "Interview Ready", href: "/services/interview-ready" },
+  { label: "Interview Accelerator", href: "/services/interview-accelerator" },
+  { label: "Win The Job Intensive", href: "/services/win-the-job-intensive" },
+  { label: "Executive Interview Coaching", href: "/services/executive-interview-coaching" },
+];
+const moreCoaching = [
+  { label: "ESL Coaching", href: "/services/esl-coaching" },
+  { label: "LinkedIn & Resume", href: "/services/linkedin-resume" },
+  { label: "Presentation Skills", href: "/services/presentation-skills" },
+];
+const howItWorks = [
+  { label: "The Win The Job Methodology", href: "/how-it-works" },
+  { label: "Your Coaching Plan", href: "/how-it-works#coaching-plan" },
+  { label: "Mock Interviews", href: "/how-it-works#mock-interviews" },
+  { label: "Free Consultation", href: "/services/free-consultation" },
+];
+const about = [
+  { label: "Meet Nick", href: "/about" },
+  { label: "Client Perspectives", href: "/about#client-perspectives" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {!SITE_LIVE && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Win The Job — Interview Coach" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#061644" />
+    {graph && <script type="application/ld+json" set:html={graph} />}
+    <slot name="seo-tags" />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header class="site-header sticky top-0 z-40 border-b border-navy-foreground/15 bg-navy">
+      <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:h-32">
+        <a href="/" class="flex items-center gap-2 no-underline" aria-label="Win The Job — home">
+          <img src={logoWhite.src} width={logoWhite.width} height={logoWhite.height} alt="Win The Job — Interview Coach" class="h-14 w-auto sm:h-28" />
+        </a>
+
+        <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+          <div class="nav-hover">
+            <button type="button" class="nav-hover-trigger">Coaching Packages</button>
+            <div class="nav-panel">
+              {coachingPackages.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+            </div>
+          </div>
+          <div class="nav-hover">
+            <button type="button" class="nav-hover-trigger">More Coaching</button>
+            <div class="nav-panel">
+              {moreCoaching.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+            </div>
+          </div>
+          <div class="nav-hover">
+            <button type="button" class="nav-hover-trigger">How It Works</button>
+            <div class="nav-panel">
+              {howItWorks.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+            </div>
+          </div>
+          <div class="nav-hover">
+            <button type="button" class="nav-hover-trigger">About</button>
+            <div class="nav-panel">
+              {about.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+            </div>
+          </div>
+          <a href="/contact" class="nav-link">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline-flex">
+            <MemberMenu client:only="react" />
+          </span>
+          <a
+            href="/book"
+            class="hidden h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground no-underline transition-colors hover:bg-primary/90 sm:inline-flex"
+          >
+            Book Now
+          </a>
+          <details class="nav-dropdown lg:hidden">
+            <summary
+              class="site-header-menu-button flex h-11 w-11 items-center justify-center rounded-control border border-border text-foreground"
+              aria-label="Open menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </summary>
+            <div class="nav-panel nav-panel--mobile">
+              <p class="mobile-group-label">Coaching Packages</p>
+              {coachingPackages.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+              <p class="mobile-group-label">More Coaching</p>
+              {moreCoaching.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+              <p class="mobile-group-label">How It Works</p>
+              {howItWorks.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+              <p class="mobile-group-label">About</p>
+              {about.map((item) => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+              <a href="/contact">Contact</a>
+              <a href="/account">My account</a>
+              <a href="/book" class="mobile-book-now">Book Now</a>
+            </div>
+          </details>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-1" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="border-t border-border bg-navy text-navy-foreground">
+      <div class="mx-auto max-w-7xl px-6 py-14">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <img src={logoWhite.src} width={logoWhite.width} height={logoWhite.height} alt="Win The Job — Interview Coach" class="h-20 w-auto sm:h-24" />
+            <p class="mt-4 max-w-xs text-sm text-navy-foreground/70">
+              Interview coaching for every stage of your career.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow text-navy-foreground/60">Reach Nick</p>
+            <ul class="mt-3 space-y-2 text-sm">
+              <li>
+                <a href="tel:+15512250583" class="inline-flex min-h-11 items-center text-navy-foreground no-underline hover:text-accent">
+                  Call 551.225.0583
+                </a>
+              </li>
+              <li>
+                <a href="mailto:nick@winthejobcoach.com" class="inline-flex min-h-11 items-center text-navy-foreground no-underline hover:text-accent">
+                  nick@winthejobcoach.com
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow text-navy-foreground/60">Where we meet</p>
+            <p class="mt-3 text-sm text-navy-foreground/85">
+              Live on Zoom, in person at an agreed upon location, or in an office setting at the Regus Bridge Plaza, Fort Lee, NJ
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow text-navy-foreground/60">When Nick coaches</p>
+            <p class="mt-3 text-sm text-navy-foreground/85">
+              Mon–Fri, 5:30–9:00 PM ET<br />
+              Sat–Sun, 9:00 AM–9:00 PM ET
+            </p>
+          </div>
+        </div>
+        <div class="mt-12 flex flex-col gap-3 border-t border-navy-foreground/15 pt-6 text-xs text-navy-foreground/60 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Win The Job Interview Coaching</p>
+          <nav class="flex flex-wrap gap-x-5" aria-label="Policies">
+            <a href="/booking-policy" class="inline-flex min-h-11 items-center text-navy-foreground/70 no-underline hover:text-accent">Booking &amp; Cancellation Policy</a>
+            <a href="/privacy" class="inline-flex min-h-11 items-center text-navy-foreground/70 no-underline hover:text-accent">Privacy</a>
+            <a href="/terms" class="inline-flex min-h-11 items-center text-navy-foreground/70 no-underline hover:text-accent">Terms</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  /* Header banner, 2026-10-31: navy background + the white logo (Nick's ask — the existing
+     stacked icon-above-wordmark lockup, shown white-on-navy as a banner). Only the controls
+     sitting directly on the navy bar flip to white; the flyout dropdown panels below it
+     (.nav-panel, including the mobile menu) keep their own white background and dark text,
+     since they float over the page, not the bar. */
+  .site-header .nav-link,
+  .site-header .nav-dropdown.lg\:hidden > summary,
+  .site-header .nav-hover-trigger,
+  .site-header .text-foreground {
+    color: var(--color-navy-foreground);
+  }
+  .site-header .text-muted-foreground {
+    color: color-mix(in srgb, var(--color-navy-foreground) 70%, transparent);
+  }
+  .site-header-menu-button {
+    border-color: color-mix(in srgb, var(--color-navy-foreground) 30%, transparent) !important;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-control);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+  .nav-link:hover {
+    color: var(--color-primary);
+  }
+
+  .nav-dropdown {
+    position: relative;
+  }
+  .nav-dropdown > summary {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-control);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-foreground);
+    cursor: pointer;
+    list-style: none;
+  }
+  .nav-dropdown > summary::-webkit-details-marker {
+    display: none;
+  }
+  .nav-dropdown > summary::after {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+  }
+  .nav-dropdown[open] > summary {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:not(.lg\:hidden) > summary:hover {
+    color: var(--color-primary);
+  }
+
+  /* Desktop nav menus: open on hover (or keyboard focus), not click — a plain div, not
+     <details>, because closed <details> content is removed from the render tree in current
+     browsers and can't be revealed by author CSS alone. The mobile hamburger menu below still
+     uses <details>/<summary>, which is the right pattern for a tap-to-open touch menu. */
+  .nav-hover {
+    position: relative;
+  }
+  .nav-hover-trigger {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding-inline: 0.75rem;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-foreground);
+    cursor: pointer;
+  }
+  .nav-hover-trigger::after {
+    content: "";
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-left: 0.1rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+  }
+  .nav-hover:hover .nav-hover-trigger,
+  .nav-hover:focus-within .nav-hover-trigger {
+    color: var(--color-primary);
+  }
+  .nav-hover > .nav-panel {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    top: calc(100% + 0.25rem);
+    transform: translateY(-4px);
+    transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  }
+  .nav-hover:hover > .nav-panel,
+  .nav-hover:focus-within > .nav-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .nav-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 50;
+    display: flex;
+    min-width: 15rem;
+    flex-direction: column;
+    gap: 0.125rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    padding: 0.5rem;
+    box-shadow: 0 12px 32px -12px rgba(9, 13, 24, 0.25);
+  }
+  .nav-panel a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+  .nav-panel a:hover {
+    background: var(--color-secondary);
+    color: var(--color-primary);
+  }
+
+  .nav-dropdown.lg\:hidden .nav-panel {
+    right: 0;
+    left: auto;
+    width: 18rem;
+    max-width: calc(100vw - 2.5rem);
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+  .mobile-group-label {
+    margin: 0.75rem 0 0.25rem;
+    padding: 0.625rem 0.75rem 0.25rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+  .mobile-group-label:first-child {
+    margin-top: 0;
+    padding-top: 0.25rem;
+    border-top: none;
+  }
+  .mobile-book-now {
+    margin-top: 0.5rem;
+    justify-content: center;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground) !important;
+    font-weight: 600;
+  }
+</style>

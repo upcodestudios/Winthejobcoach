@@ -1,0 +1,57 @@
+---
+// /book — every live service and plan in one place, each with a policy line above its Book /
+// Buy Package control, linking /booking-policy.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { fetchServices } from "../wix/bookings/services";
+import { fetchPlans } from "../wix/pricing-plans/plans";
+import { BookingServiceCard } from "../components/bookings/BookingServiceCard";
+import { PlanTierCard } from "../components/pricing-plans/PlanTierCard";
+import type { ServiceSummary } from "../wix/bookings/types";
+import type { PlanSummary } from "../wix/pricing-plans/types";
+
+let services: ServiceSummary[] = [];
+let plans: PlanSummary[] = [];
+try {
+  const [svc, pl] = await Promise.all([fetchServices({ limit: 50 }), fetchPlans()]);
+  services = svc.items;
+  plans = pl;
+} catch {
+  // An unguarded SSR throw truncates the response mid-stream; the page renders the empty state.
+}
+---
+
+<SiteLayout title="Book a Session | Win The Job" description="Book a free consultation or a coaching session with Nick Fennell, or buy a coaching package. Live on Zoom or in person in Fort Lee, NJ.">
+  <div class="wtj-section mx-auto max-w-7xl px-6">
+    <h1 class="mb-2 text-2xl font-semibold tracking-tight">Book a session</h1>
+    <p class="mb-2 max-w-2xl text-sm text-muted-foreground">
+      Pick a single session below, or buy a coaching package and book each session with a credit. Not sure where to start? Book the free 30-minute consultation.
+    </p>
+    <p class="mb-8 text-sm">
+      Please read the <a href="/booking-policy" class="text-primary underline">Booking &amp; Cancellation Policy</a> before you book — cancellation and reschedule windows apply.
+    </p>
+
+    <h2 class="mb-4 text-lg font-semibold tracking-tight">Single sessions</h2>
+    {services.length === 0 ? (
+      <p class="mb-10 text-sm text-muted-foreground">Sessions can't be shown right now. Please try again shortly, or call 551.225.0583.</p>
+    ) : (
+      <div class="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((s) => (
+          <BookingServiceCard service={s} />
+        ))}
+      </div>
+    )}
+
+    <h2 class="mb-4 text-lg font-semibold tracking-tight">Packages</h2>
+    {plans.length === 0 ? (
+      <p class="text-sm text-muted-foreground">Packages can't be shown right now. Please try again shortly, or call 551.225.0583.</p>
+    ) : (
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {plans.map((p) => (
+          <div>
+            <PlanTierCard client:load plan={p} />
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</SiteLayout>

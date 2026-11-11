@@ -1,0 +1,93 @@
+---
+import { organizationSchema, personSchema } from "../data/site";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageHeader from "../components/site/PageHeader.astro";
+import { pageHeaderPhoto } from "../data/headerPhotos";
+import CtaBand from "../components/site/CtaBand.astro";
+import CircularTestimonials from "../components/site/CircularTestimonials";
+import { fetchTestimonials } from "../wix/cms/testimonials";
+import { fetchPageContent } from "../wix/cms/pageContent";
+import hs480 from "../assets/photos/nick-headshot-480.webp";
+import hs960 from "../assets/photos/nick-headshot-960.webp";
+import hs1600 from "../assets/photos/nick-headshot-1600.webp";
+
+const testimonials = await fetchTestimonials();
+
+// Tier 2 (02-Architecture/WTJ_Client-Content-Self-Edit_Scope_v1.0.md): this bio copy is editable
+// by Nick from the Wix Content Manager (`PageContent` collection, item "about"). These literals
+// are the fallback, used only if Wix can't be reached or a field comes back empty.
+const content = await fetchPageContent("about", {
+  bioParagraph1:
+    "Nick is a seasoned corporate professional with executive-level global experience. He has developed his interview process expertise over 25 years. As a subject matter expert in corporate learning and development, he has the background to coach the core skills needed to compete for and win jobs.",
+  bioParagraph2:
+    "As a job candidate, Nick has won multiple interview competitions and six-figure jobs. His current work includes advising Fortune 1000 leaders, including Human Resources, Chief People Officers and business line leaders.",
+  bioBullets: [
+    "Corporate professional with award-winning executive and management experience",
+    "Designed and implemented interview processes for global companies",
+    "Has won six-figure jobs using preparation and practice techniques",
+  ],
+  quoteText:
+    "The founder of the Behavioral Interview process is Dr. Paul Green. My interview process expertise was formed by members of Dr. Green's team. Early in my leadership career, I worked with that team extensively to design a world-class interview process.",
+  clientPerspectivesLede: "Professional leaders on Nick's impact, integrity and ability to build results.",
+});
+---
+
+<SiteLayout
+  title="About Nick Fennell | Win The Job Interview Coaching"
+  description="Nick Fennell has 25 years of interview process experience in corporate learning and development, and coaches job seekers from first interviews to leadership roles."
+  jsonLd={[personSchema(), organizationSchema()]}
+>
+  <PageHeader eyebrow="About" title="Meet Nick Fennell" lede="Interview coach and corporate learning advisor." image={pageHeaderPhoto.about} />
+
+  <section id="meet-nick" class="mx-auto grid max-w-7xl scroll-mt-28 items-start gap-12 px-6 py-14 lg:grid-cols-[0.8fr_1.2fr]">
+    <div class="mx-auto aspect-square w-full max-w-[360px] overflow-hidden rounded-full border-4 border-background shadow-sm lg:mx-0">
+      <img
+        src={hs960.src}
+        srcset={`${hs480.src} 480w, ${hs960.src} 960w, ${hs1600.src} 1600w`}
+        sizes="360px"
+        width={hs960.width}
+        height={hs960.height}
+        alt="Portrait of Nick Fennell"
+        class="h-full w-full object-cover object-top"
+        loading="eager"
+      />
+    </div>
+    <div>
+      <p class="text-lg leading-relaxed">
+        {content.bioParagraph1}
+      </p>
+      <p class="mt-4 text-base leading-relaxed text-muted-foreground">
+        {content.bioParagraph2}
+      </p>
+      <ul class="mt-6 space-y-3 text-base">
+        {content.bioBullets.map((b) => (
+          <li class="flex gap-3"><span aria-hidden="true" class="text-primary">✓</span>{b}</li>
+        ))}
+      </ul>
+      <blockquote class="mt-8 border-l-4 border-accent pl-5 text-base italic leading-relaxed text-muted-foreground">
+        &ldquo;{content.quoteText}&rdquo;
+        <footer class="mt-2 text-sm not-italic font-semibold text-foreground">Nick Fennell, Founder, Win The Job</footer>
+      </blockquote>
+      <a
+        href="https://www.linkedin.com/in/nickfennelltraininganddevelopmentadvisor/"
+        class="mt-8 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline"
+        rel="noopener"
+      >
+        Nick Fennell on LinkedIn
+      </a>
+    </div>
+  </section>
+
+  <section id="client-perspectives" class="scroll-mt-28 bg-secondary">
+    <div class="mx-auto max-w-5xl px-6 py-14">
+      <p class="eyebrow text-primary">Client perspectives</p>
+      <h2 class="mt-3 text-3xl">References and testimonials</h2>
+      <p class="mt-3 max-w-2xl text-muted-foreground">{content.clientPerspectivesLede}</p>
+      <div class="mt-8">
+        <CircularTestimonials client:visible testimonials={testimonials} />
+      </div>
+    </div>
+  </section>
+
+  <CtaBand heading="Ready to talk about your interview?" body="Book a free 30-minute Zoom consultation with Nick." />
+</SiteLayout>

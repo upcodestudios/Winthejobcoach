@@ -1,0 +1,123 @@
+---
+// Service detail + booking page.
+//
+// This is a Wix ITEM PAGE: the wixMetadata export + <SEO.Tags> below let the site owner edit
+// this page's title/description/OG in the dashboard and register the route in the sitemap.
+// Keep all three SEO pieces and this frontmatter; swap the island import to YOUR booking
+// component. The booking island is client:only — availability is timezone/session-specific.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import BookingSurface from "../../components/bookings/BookingSurface";
+import OfferingView from "../../components/site/OfferingView.astro";
+import { serviceSchema } from "../../data/site";
+import { fetchOfferingBySlug } from "../../data/offerings";
+import { fetchTestimonials } from "../../wix/cms/testimonials";
+import { fetchServiceBySlug, fetchServices } from "../../wix/bookings/services";
+import { fetchPlans, fetchPlanBySlug } from "../../wix/pricing-plans/plans";
+import type { PlanDetail } from "../../wix/pricing-plans/types";
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.bookings.id,
+  pageIdentifier: WIX_APPS.bookings.servicePageMetadata.pageIdentifier,
+  identifiers: {
+    slug: WIX_APPS.bookings.servicePageMetadata.identifiers.slug,
+  },
+};
+
+const slug = Astro.params.slug!;
+const offering = await fetchOfferingBySlug(slug);
+
+// The nine marketing pages: copy from src/data/offerings.ts, price/length/booking live from Wix.
+let offeringService: Awaited<ReturnType<typeof fetchServiceBySlug>> = null;
+let offeringPlan: PlanDetail | null = null;
+let testimonials: Awaited<ReturnType<typeof fetchTestimonials>> = [];
+if (offering) {
+  try {
+    if (offering.kind === "service") {
+      const list = await fetchServices({ limit: 50 });
+      const hit = list.items.find((s) => s.name === offering.wixName);
+      offeringService = hit ? await fetchServiceBySlug(hit.slug) : null;
+    } else if (offering.kind === "plan") {
+      const hit = (await fetchPlans()).find((p) => p.name === offering.wixName);
+      offeringPlan = hit ? await fetchPlanBySlug(hit.slug) : null;
+    }
+    testimonials = await fetchTestimonials();
+  } catch {
+    // Guarded: an unhandled SSR throw truncates the response mid-stream. The page still renders its copy.
+  }
+}
+
+// Behind Wix's proxy the request URL is internal — the real public page URL arrives on
+// x-wix-forwarded-url; the SEO service needs the public one.
+const forwardedUrl = Astro.request.headers.get("x-wix-forwarded-url");
+const pageUrl =
+  forwardedUrl && URL.canParse(forwardedUrl) && /^https?:$/.test(new URL(forwardedUrl).protocol)
+    ? forwardedUrl
+    : Astro.url.href;
+
+let service: Awaited<ReturnType<typeof fetchServiceBySlug>> = null;
+let seoTagsServiceConfig: Awaited<ReturnType<typeof loadSEOTagsServiceConfig>> | null = null;
+if (!offering) try {
+  [service, seoTagsServiceConfig] = await Promise.all([
+    fetchServiceBySlug(slug),
+    loadSEOTagsServiceConfig({
+      pageUrl,
+      itemType: seoTags.ItemType.BOOKINGS_SERVICE,
+      itemData: { slug },
+    }).catch(() => null),
+  ]);
+} catch {
+  // Guarded: an unhandled SSR throw truncates the response mid-stream.
+}
+
+if (!offering && !service) {
+  return new Response(null, { status: 404 });
+}
+---
+
+{offering && (
+  <SiteLayout
+    title={offering.name.includes("Win The Job") ? `${offering.name} | Interview Coaching` : `${offering.name} | Win The Job`}
+    description={offering.metaDescription}
+    jsonLd={[serviceSchema({ slug: offering.slug, name: offering.name, description: offering.metaDescription })]}
+  >
+    <OfferingView offering={offering} service={offeringService} plan={offeringPlan} testimonials={testimonials} />
+  </SiteLayout>
+)}
+{!offering && service && (
+<SiteLayout title={service.name}>
+  {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
+
+  <div class="grid gap-10 md:grid-cols-2">
+    <div>
+      {service.imageUrl && (
+        <div class="aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
+          <img src={service.imageUrl} alt={service.name} class="h-full w-full object-cover" />
+        </div>
+      )}
+      <h1 class="mt-5 text-2xl font-semibold tracking-tight">{service.name}</h1>
+      {service.tagLine && <p class="mt-1 text-muted-foreground">{service.tagLine}</p>}
+      <p class="mt-2 text-sm text-muted-foreground">
+        {service.durationLabel ? `${service.durationLabel} · ` : ""}
+        {service.rateType === "NO_FEE" && service.hasPricingPlans ? (
+          <span class="text-foreground">Plan credit only</span>
+        ) : (
+          service.price && <span class="text-foreground">{service.priceFrom ? "From " : ""}{service.price}</span>
+        )}
+        {service.basePrice && <s class="ml-1">{service.basePrice}</s>}
+        {service.discountName && <span class="ml-1 text-xs">{service.discountName}</span>}
+      </p>
+      {service.locations.some((l) => l.name) && (
+        <p class="mt-1 text-sm text-muted-foreground">{service.locations.map((l) => l.name).filter(Boolean).join(" · ")}</p>
+      )}
+      {service.description && <p class="mt-4 text-sm leading-relaxed text-muted-foreground">{service.description}</p>}
+    </div>
+    <div>
+      <BookingSurface client:only="react" service={service} />
+    </div>
+  </div>
+</SiteLayout>
+)}

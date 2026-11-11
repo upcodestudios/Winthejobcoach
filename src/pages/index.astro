@@ -1,0 +1,274 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { organizationSchema, personSchema } from "../data/site";
+import CircularTestimonials from "../components/site/CircularTestimonials";
+import PackageCards from "../components/site/PackageCards";
+import FeatureSteps from "../components/site/FeatureSteps";
+import { fetchTestimonials } from "../wix/cms/testimonials";
+import { fetchPageContent } from "../wix/cms/pageContent";
+import { fetchPackageCards } from "../data/packageCards";
+import heroImg480 from "../assets/photos/nick-hero-main-480.webp";
+import heroImg960 from "../assets/photos/nick-hero-main-960.webp";
+import heroImg1600 from "../assets/photos/nick-hero-main-1376.webp";
+import prepImg480 from "../assets/photos/nick-on-stage-480.webp";
+import prepImg960 from "../assets/photos/nick-on-stage-960.webp";
+import conferenceImg480 from "../assets/photos/nick-conference-480.webp";
+import conferenceImg960 from "../assets/photos/nick-conference-960.webp";
+import featureStep1 from "../assets/photos/feature-step-1-interviews-create-stress-1200.webp";
+import featureStep2 from "../assets/photos/feature-step-2-prepare-rehearse-perform-1200.webp";
+import featureStep3 from "../assets/photos/feature-step-3-strategy-built-around-you-1200.webp";
+
+const packages = await fetchPackageCards();
+
+const method = [
+  {
+    title: "Prepare",
+    body: "Research the role and company, build your key talking points and learn how the hiring process works.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  },
+  {
+    title: "Practice",
+    body: "Rehearse the questions you're likely to face, out loud, and get feedback on every answer.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`,
+  },
+  {
+    title: "Perform",
+    body: "Walk in knowing what you want to say, how to say it and how to stay in control of your nerves.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V3"/></svg>`,
+  },
+];
+
+const advantageImages = [featureStep1, featureStep2, featureStep3];
+
+// Tier 2 (02-Architecture/WTJ_Client-Content-Self-Edit_Scope_v1.0.md): this hero/advantages/
+// confidence-band/closing-CTA copy is editable by Nick from the Wix Content Manager (`PageContent`
+// collection, item "home"). These literals are the fallback, used only if Wix can't be reached or
+// a field comes back empty — the page never goes blank.
+const content = await fetchPageContent("home", {
+  heroHeading: "Interview Coaching — Walk In Prepared, Walk Out With an Offer",
+  heroLede:
+    "We help you turn your experience into compelling interview answers, control stress, practice, and walk into every interview prepared to perform at your best.",
+  advantages: [
+    { title: "Interviews create stress", body: "Even highly qualified candidates feel it, because companies often don't have a formal process, or don't explain it well." },
+    { title: "Prepare. Rehearse. Perform.", body: "Nick helps you get ready for the questions you're likely to face, deliver compelling answers with confidence and walk in knowing you've rehearsed." },
+    { title: "A strategy built around you", body: "Whether it's your first professional interview, a career change, a leadership role or a final round, you build a plan for your role and what sets you apart." },
+  ],
+  confidenceBody:
+    "Meet Nick live on Zoom, in person at an agreed upon location, or in an office setting at the Regus Bridge Plaza, Fort Lee, NJ. Evenings and weekends, with questions answered by phone and email between coaching sessions.",
+  closingCtaHeading: "Get Interview Ready and Win The Job",
+});
+
+// The three images are a fixed, code-managed asset order — zipped onto whatever advantages copy
+// comes back, by position, clamped so an edited item count never indexes past the last image.
+const advantages = content.advantages.map((a, i) => ({
+  ...a,
+  image: advantageImages[Math.min(i, advantageImages.length - 1)],
+}));
+
+const testimonials = await fetchTestimonials();
+---
+
+<SiteLayout
+  title="Win The Job | Interview Coaching — Walk In Prepared, Walk Out With an Offer"
+  description="Interview coaching for every stage of your career, from your first interview to your next leadership role. Live on Zoom or in person in Fort Lee, NJ."
+  jsonLd={[organizationSchema(), personSchema()]}
+>
+  <!-- Hero — wh-1080 pattern: full-bleed photo, navy gradient, a floating white panel -->
+  <section
+    class="hero-photo relative grid min-h-[560px] items-center bg-cover sm:min-h-[640px] lg:min-h-[82vh]"
+    style={{
+      "--hero-480": `url("${heroImg480.src}")`,
+      "--hero-960": `url("${heroImg960.src}")`,
+      "--hero-1600": `url("${heroImg1600.src}")`,
+    }}
+  >
+    <div class="mx-auto w-full max-w-7xl px-6 py-14 sm:py-20">
+      <div class="w-full max-w-[560px]">
+        <div class="h-1 w-16 rounded-full bg-primary" aria-hidden="true"></div>
+        <h1 class="mt-5 text-[2.125rem] font-bold text-navy-foreground sm:text-[2.5rem]">
+          {content.heroHeading}
+        </h1>
+        <blockquote class="wtj-lede mt-5 border-l-2 border-navy-foreground/40 pl-4 text-navy-foreground/85">
+          {content.heroLede}
+        </blockquote>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/book"
+            class="inline-flex h-[52px] items-center justify-center rounded-control bg-primary px-7 text-base font-medium text-primary-foreground no-underline transition-transform hover:-translate-y-0.5"
+          >
+            Book Now
+          </a>
+          <a
+            href="/services/free-consultation"
+            class="inline-flex h-[52px] items-center justify-center rounded-control border border-navy-foreground/50 px-7 text-base font-medium text-navy-foreground no-underline hover:bg-navy-foreground/10"
+          >
+            Book a free consultation
+          </a>
+        </div>
+        <p class="eyebrow mt-8 text-navy-foreground/60">Learn and be coached on the</p>
+        <p class="mt-2 text-sm font-semibold text-navy-foreground sm:whitespace-nowrap sm:text-[1.75rem]">
+          Prepare <span class="text-navy-foreground/40">→</span> Practice <span class="text-navy-foreground/40">→</span> Perform <span class="text-navy-foreground/40">→</span> <span class="text-primary">Win The Job</span> Methodology
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- The initial advantage -->
+  <section class="wtj-section mx-auto max-w-7xl px-6">
+    <FeatureSteps
+      client:visible
+      title="You can't predict the process. You can prepare for the surprise."
+      steps={advantages.map((a, i) => ({
+        step: String(i + 1).padStart(2, "0"),
+        title: a.title,
+        body: a.body,
+        imageSrc: a.image.src,
+        imageAlt: a.title,
+      }))}
+    />
+  </section>
+
+  <!-- Quote -->
+  <section class="wtj-section mx-auto max-w-4xl px-6">
+    <blockquote class="rounded-lg bg-navy px-8 py-10 text-center text-navy-foreground sm:px-14 sm:py-12">
+      <p class="text-xl font-medium leading-relaxed sm:text-2xl">&ldquo;The questions don't really matter&mdash;it's our preparation that really counts.&rdquo;</p>
+      <footer class="mt-5 text-sm font-semibold uppercase tracking-wide text-navy-foreground/70">Gary Burnison &bull; CEO, Korn Ferry</footer>
+    </blockquote>
+  </section>
+
+  <!-- Method -->
+  <section class="wtj-section bg-secondary">
+    <div class="mx-auto max-w-7xl px-6">
+      <p class="eyebrow text-primary">The Win The Job Methodology</p>
+      <h2 class="mt-3 max-w-2xl text-3xl text-foreground sm:text-4xl">
+        Prepare. Practice. Perform.
+      </h2>
+      <p class="mt-4 max-w-2xl text-muted-foreground">A practical path from research to rehearsal to interview-day confidence.</p>
+      <div class="mt-10 grid gap-4 sm:grid-cols-3">
+        {method.map((item, i) => (
+          <div class={`rounded-lg p-7 ${i === 1 ? "bg-navy text-navy-foreground" : "bg-background"}`}>
+            <span
+              class={`inline-flex h-9 w-9 items-center justify-center rounded-full ${i === 1 ? "bg-navy-foreground/15 text-accent" : "bg-primary/10 text-primary"}`}
+              set:html={item.icon}
+            />
+            <h3 class="mt-2 text-xl">{item.title}</h3>
+            <p class={`mt-2 text-sm ${i === 1 ? "text-navy-foreground/75" : "text-muted-foreground"}`}>{item.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Packages teaser -->
+  <section class="wtj-section mx-auto max-w-7xl px-6">
+    <p class="eyebrow text-primary">Coaching Packages</p>
+    <h2 class="mt-3 max-w-2xl text-3xl text-foreground sm:whitespace-nowrap sm:text-4xl">
+      Choose the support that fits your interview
+    </h2>
+    <div class="mt-10">
+      <PackageCards client:visible packages={packages} />
+    </div>
+  </section>
+
+  <!-- Confidence band -->
+  <section class="wtj-section mx-auto max-w-7xl px-6">
+    <div class="grid items-center gap-16 lg:grid-cols-2">
+      <div class="order-2 lg:order-1">
+        <div class="relative mx-auto aspect-[10/13] max-w-md">
+          <div class="absolute left-0 top-0 z-10 w-3/5 overflow-hidden rounded-lg shadow-lg aspect-[4/5]">
+            <img
+              src={prepImg960.src}
+              srcset={`${prepImg480.src} 480w, ${prepImg960.src} 960w`}
+              sizes="(min-width: 1024px) 270px, 54vw"
+              width={prepImg960.width}
+              height={prepImg960.height}
+              alt="Nick Fennell presenting"
+              class="h-full w-full object-cover object-top"
+              loading="lazy"
+            />
+          </div>
+          <div class="absolute left-[30%] top-[40%] z-20 w-3/5 overflow-hidden rounded-lg border-4 border-background shadow-xl aspect-[4/5]">
+            <img
+              src={conferenceImg960.src}
+              srcset={`${conferenceImg480.src} 480w, ${conferenceImg960.src} 960w`}
+              sizes="(min-width: 1024px) 270px, 54vw"
+              width={conferenceImg960.width}
+              height={conferenceImg960.height}
+              alt="Nick Fennell with a client"
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+        <div class="mx-auto mt-5 max-w-md text-left">
+          <p class="text-xl font-semibold text-foreground sm:text-2xl">Nick Fennell</p>
+          <p class="text-sm font-medium uppercase tracking-wide text-muted-foreground">Founder, Win The Job</p>
+        </div>
+      </div>
+      <div class="order-1 lg:order-2">
+        <p class="eyebrow text-primary">Coaching that's personal</p>
+        <h2 class="mt-3 text-3xl text-foreground sm:text-4xl">
+          One-on-one, in person or live on Zoom
+        </h2>
+        <p class="wtj-lede mt-4 max-w-md text-muted-foreground">
+          {content.confidenceBody}
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="/about" class="inline-flex h-12 items-center justify-center rounded-control border border-border px-6 text-sm font-semibold text-foreground no-underline hover:bg-secondary">Meet Nick</a>
+          <a href="/book" class="inline-flex h-12 items-center justify-center rounded-control bg-primary px-6 text-sm font-semibold text-primary-foreground no-underline transition-transform hover:-translate-y-0.5">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {testimonials.length > 0 && (
+    <section class="mx-auto max-w-4xl px-6 pb-16 sm:pb-24">
+      <CircularTestimonials client:visible testimonials={testimonials} />
+      <p class="mt-4 text-center text-sm"><a href="/about#client-perspectives" class="font-medium text-logo-blue underline">More client perspectives</a></p>
+    </section>
+  )}
+
+  <!-- Closing CTA -->
+  <section class="bg-navy text-navy-foreground">
+    <div class="mx-auto flex max-w-7xl flex-col items-start gap-6 px-6 py-16 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="max-w-lg text-2xl sm:text-3xl">
+        {content.closingCtaHeading}
+      </h2>
+      <a
+        href="/services/free-consultation"
+        class="inline-flex h-[52px] shrink-0 items-center justify-center rounded-control bg-primary px-7 text-base font-medium text-primary-foreground no-underline transition-transform hover:-translate-y-0.5"
+      >
+        Book a free consultation
+      </a>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  /* Responsive background photo: smallest file that still fills the hero at each width,
+     a navy gradient over it so the text (set directly on the photo, no card) stays legible
+     at every crop — held near-opaque through the zone the text block occupies, then fading
+     out over the photo so Nick stays visible on the right. */
+  .hero-photo {
+    background-image: linear-gradient(90deg, rgba(6, 22, 68, 0.97) 0%, rgba(6, 22, 68, 0.94) 50%, rgba(6, 22, 68, 0.25) 100%), var(--hero-480);
+    /* The photo places Nick on the right third; a narrow viewport only ever shows a thin
+       vertical slice of this wide image, so the focal point shifts further right the
+       narrower the screen gets, to keep him in frame instead of showing empty background. */
+    background-position: 82% center;
+  }
+  @media (min-width: 640px) {
+    .hero-photo {
+      background-image: linear-gradient(90deg, rgba(6, 22, 68, 0.97) 0%, rgba(6, 22, 68, 0.94) 50%, rgba(6, 22, 68, 0.25) 100%), var(--hero-960);
+      background-position: 70% center;
+    }
+  }
+  @media (min-width: 1024px) {
+    .hero-photo {
+      background-image: linear-gradient(90deg, rgba(6, 22, 68, 0.97) 0%, rgba(6, 22, 68, 0.94) 45%, rgba(6, 22, 68, 0.25) 100%), var(--hero-1600);
+      /* A vertically-centered anchor crops evenly top and bottom; on a wide, short window
+         (bg-cover scaling up to fill the width) that crop grows enough to cut into Nick's
+         head. Anchoring higher keeps the crop coming from below him instead. */
+      background-position: center 15%;
+    }
+  }
+</style>

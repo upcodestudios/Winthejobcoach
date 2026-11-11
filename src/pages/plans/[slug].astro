@@ -1,0 +1,15 @@
+---
+// Kept as a redirect to the matching service page (matched by plan name), else the services list.
+import { fetchOfferings } from "../../data/offerings";
+import { fetchPlanBySlug } from "../../wix/pricing-plans/plans";
+
+let target = "/services";
+try {
+  const [plan, offerings] = await Promise.all([fetchPlanBySlug(Astro.params.slug!), fetchOfferings()]);
+  const hit = plan && offerings.find((o) => o.kind === "plan" && o.wixName === plan.name);
+  if (hit) target = `/services/${hit.slug}`;
+} catch {
+  // Guarded: fall back to the services list.
+}
+return Astro.redirect(target, 301);
+---

@@ -1,0 +1,90 @@
+---
+// /services — the nine ways Nick helps you prepare, then the packages side by side. Prices are read
+// live from Wix (nothing typed here); a card shows no price if Wix can't be reached.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageHeader from "../components/site/PageHeader.astro";
+import PackageCards from "../components/site/PackageCards";
+import NewsletterSignup from "../components/site/NewsletterSignup";
+import { fetchOfferings } from "../data/offerings";
+import { fetchPackageCards } from "../data/packageCards";
+import { pageHeaderPhoto } from "../data/headerPhotos";
+import { getForm } from "../wix/forms/forms";
+import type { FormDto } from "../wix/forms/types";
+
+const NEWSLETTER_FORM_ID = "734aec65-aaa4-4186-81de-86e3cbf7cbed"; // Wix Forms: "Newsletter"
+let newsletterForm: FormDto | null = null;
+try {
+  newsletterForm = await getForm(NEWSLETTER_FORM_ID);
+} catch {
+  // Guarded: an unhandled SSR throw truncates the response mid-stream; the island loads the schema itself.
+}
+
+const ways = [
+  { title: "Personalized Interview Coaching", body: "One-on-one coaching designed around your career goals, experience and target roles." },
+  { title: "Interview Strategy", body: "A customized preparation plan: anticipate challenging questions, research your target company and choose the stories that best show your experience." },
+  { title: "Executive & Leadership Selection Process Coaching", body: "Prepare for high-stakes interviews with a focus on leadership presence, strategic thinking and framing past success." },
+  { title: "Post-Interview Review", body: "Break down how your interview went, find what to improve and make a plan for the next one." },
+  { title: "Mock Interviews", body: "Realistic interview simulations with feedback you can act on." },
+  { title: "Behavioral Interview Preparation", body: "Build clear, compelling answers to common behavioral questions and learn how to communicate your experience." },
+  { title: "Technical & Case Interview Prep", body: "Practice role-specific technical, analytical and case questions with structured guidance." },
+  { title: "Resume-to-Interview Preparation", body: "Prepare for the questions interviewers are likely to ask about your background." },
+  { title: "Communication & Confidence Coaching", body: "Strengthen your delivery, storytelling, body language and ability to communicate clearly under pressure." },
+];
+
+const packages = await fetchPackageCards();
+const offerings = await fetchOfferings();
+const bySlug = Object.fromEntries(offerings.map((o) => [o.slug, o]));
+const more = ["esl-coaching", "linkedin-resume", "presentation-skills"].map((s) => bySlug[s]).filter(Boolean);
+---
+
+<SiteLayout
+  title="Interview Coaching Services | Win The Job"
+  description="Nine ways Nick Fennell helps you prepare for an interview, from a single session to a full coaching package, on Zoom or in Fort Lee, NJ."
+>
+  <PageHeader
+    eyebrow="Services"
+    title="Nine ways to prepare"
+    lede="Focused support for every stage of the interview journey."
+    image={pageHeaderPhoto.services}
+  />
+
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {ways.map((w, i) => (
+        <div class="rounded-lg border border-border bg-white p-6">
+          <span class="text-sm font-semibold text-primary">{String(i + 1).padStart(2, "0")}</span>
+          <h2 class="mt-2 text-lg font-semibold">{w.title}</h2>
+          <p class="mt-2 text-sm text-muted-foreground">{w.body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="bg-secondary">
+    <div class="mx-auto max-w-7xl px-6 py-14">
+      <p class="eyebrow text-primary">Coaching packages</p>
+      <h2 class="mt-3 text-3xl">Choose the amount of support you need</h2>
+      <div class="mt-8">
+        <PackageCards client:visible packages={packages} />
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <h2 class="text-3xl">Additional coaching</h2>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      These are shaped around you, so they start with a free consultation.
+    </p>
+    <div class="mt-8 grid gap-5 sm:grid-cols-3">
+      {more.map((m) => (
+        <a href={`/services/${m.slug}`} class="rounded-lg border border-border bg-white p-6 no-underline transition-colors hover:border-primary">
+          <span class="text-lg font-semibold text-foreground">{m.name}</span>
+          <span class="mt-2 block text-sm text-muted-foreground">{m.tagline}</span>
+          <span class="mt-4 block text-sm font-medium text-primary">Learn more →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <NewsletterSignup client:visible formId={NEWSLETTER_FORM_ID} initialForm={newsletterForm ?? undefined} />
+</SiteLayout>
