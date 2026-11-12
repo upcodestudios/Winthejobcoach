@@ -18,11 +18,6 @@ export default function PlanPitch({ plan }: { plan: PlanDetail }) {
         {plan.billing && <span className="ml-2 text-base text-muted-foreground">{plan.billing}</span>}
         {plan.duration && <span className="ml-2 text-base text-muted-foreground">· valid {plan.duration}</span>}
       </p>
-      {plan.fees.map((fee) => (
-        <p key={fee.name} className="mt-1 text-sm text-muted-foreground">
-          + {fee.amount} {fee.name}
-        </p>
-      ))}
       {plan.freeTrialDays != null && (
         <p className="mt-1 text-sm text-muted-foreground">{plan.freeTrialDays}-day free trial</p>
       )}

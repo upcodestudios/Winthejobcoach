@@ -22,16 +22,19 @@ import {
   failure,
   fromAuthRoute,
   toLoginResult,
+  type CaptchaTokens,
   type LoginResult,
   type LoginState,
   type RawAuth,
 } from "./auth-core";
 
-export type { LoginResult, LoginState };
+export type { CaptchaTokens, LoginResult, LoginState };
 
 export interface LoginOptions {
   /** Same-site path to land on after a SUCCESS (ambient: the callback's destination). Default "/". */
   returnTo?: string;
+  /** reCAPTCHA tokens — only needed when the site owner turned reCAPTCHA on (see LoginResult.captcha). */
+  captchaTokens?: CaptchaTokens;
 }
 
 /** Whether register() can carry first/last name. The built-in signup route takes credentials only. */
@@ -49,6 +52,14 @@ export function loggedInHint(): boolean | null {
 
 function safeReturnTo(returnTo: string | undefined): string {
   return returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/";
+}
+
+/** The reCAPTCHA tokens the built-in routes read (their body schema names both fields). */
+function captchaFields(tokens: CaptchaTokens | undefined): Record<string, string> {
+  const fields: Record<string, string> = {};
+  if (tokens?.recaptchaToken) fields.recaptchaToken = tokens.recaptchaToken;
+  if (tokens?.invisibleRecaptchaToken) fields.invisibleRecaptchaToken = tokens.invisibleRecaptchaToken;
+  return fields;
 }
 
 async function postAuthRoute(path: string, body: Record<string, string>): Promise<LoginResult> {
@@ -80,8 +91,9 @@ async function finish(raw: RawAuth): Promise<LoginResult> {
 // ---- the exports (same on both transports) ---------------------------------------------------------
 
 export async function loginMember(email: string, password: string, options: LoginOptions = {}): Promise<LoginResult> {
-  if (!membersAuth) return postAuthRoute("/api/auth/login", { email, password, returnToUrl: safeReturnTo(options.returnTo) });
-  return finish((await membersAuth.login({ email, password })) as RawAuth);
+  if (!membersAuth)
+    return postAuthRoute("/api/auth/login", { email, password, returnToUrl: safeReturnTo(options.returnTo), ...captchaFields(options.captchaTokens) });
+  return finish((await membersAuth.login({ email, password, ...(options.captchaTokens ? { captchaTokens: options.captchaTokens } : {}) })) as RawAuth);
 }
 
 export async function registerMember(
@@ -90,8 +102,16 @@ export async function registerMember(
   profile?: { firstName?: string; lastName?: string },
   options: LoginOptions = {},
 ): Promise<LoginResult> {
-  if (!membersAuth) return postAuthRoute("/api/auth/signup", { email, password, returnToUrl: safeReturnTo(options.returnTo) });
-  return finish((await membersAuth.register({ email, password, ...(profile ? { profile } : {}) })) as RawAuth);
+  if (!membersAuth)
+    return postAuthRoute("/api/auth/signup", { email, password, returnToUrl: safeReturnTo(options.returnTo), ...captchaFields(options.captchaTokens) });
+  return finish(
+    (await membersAuth.register({
+      email,
+      password,
+      ...(profile ? { profile } : {}),
+      ...(options.captchaTokens ? { captchaTokens: options.captchaTokens } : {}),
+    })) as RawAuth,
+  );
 }
 
 /** Continue an EMAIL_VERIFICATION_REQUIRED flow with the code from the email; the transport holds the state. */

@@ -7,12 +7,28 @@
 /** The four outcomes every credential operation resolves to; the shipped LoginForm renders each. */
 export type LoginState = "SUCCESS" | "EMAIL_VERIFICATION_REQUIRED" | "OWNER_APPROVAL_REQUIRED" | "FAILURE";
 
+/**
+ * reCAPTCHA tokens the site owner's setting makes Wix demand before it answers a signup. Wix's own
+ * Enterprise site keys and the widget live in src/components/members/recaptcha.ts — never your own key.
+ */
+export interface CaptchaTokens {
+  /** The visible checkbox widget's token (the "Always" setting). */
+  recaptchaToken?: string;
+  /** The invisible reCAPTCHA's token (the "for suspected bots" setting). */
+  invisibleRecaptchaToken?: string;
+}
+
 export interface LoginResult {
   state: LoginState;
   /** Continues an EMAIL_VERIFICATION_REQUIRED flow (the transport keeps it too — verifyMemberEmail needs no argument). */
   stateToken?: string;
   /** A stable name for a FAILURE: invalidPassword, invalidEmail, emailAlreadyExists, resetPassword, missingCaptchaToken, invalidCaptchaToken. */
   errorCode?: string;
+  /**
+   * A FAILURE the site's reCAPTCHA setting caused: "invisible" is retried without the visitor,
+   * "visible" needs the widget's checkbox. Both are cleared by resubmitting with a CaptchaTokens entry.
+   */
+  captcha?: "invisible" | "visible";
   /** Wix's message for a FAILURE — render it. */
   error?: string;
   /**
@@ -91,8 +107,9 @@ export function fromAuthRoute(status: number, body: RawAuth | null): LoginResult
     case "OWNER_APPROVAL_REQUIRED":
       return { state: loginState };
     case "SILENT_CAPTCHA_REQUIRED":
+      return { ...failure(FAILURE_TEXT.missingCaptchaToken, "missingCaptchaToken"), captcha: "invisible" };
     case "USER_CAPTCHA_REQUIRED":
-      return failure("This site requires a CAPTCHA to sign up; the form has no CAPTCHA widget yet.", "captchaRequired");
+      return { ...failure(FAILURE_TEXT.missingCaptchaToken, "missingCaptchaToken"), captcha: "visible" };
     case "FAILURE":
       return failure(body?.error ?? FAILURE_TEXT[body?.errorCode ?? ""] ?? "Could not sign in.", body?.errorCode ?? "unknown");
     default: {
