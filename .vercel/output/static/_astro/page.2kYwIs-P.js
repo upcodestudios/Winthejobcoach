@@ -1,0 +1,1 @@
+import{n as e,t}from"./setup.B7jgyoZQ.js";t({clientId:e});
