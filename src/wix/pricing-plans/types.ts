@@ -33,7 +33,7 @@ export interface PlanSummary {
    * for "6 months", or bill "one-time" and be valid "1 month".
    */
   duration: string | null;
-  /** Additional fees charged with the first payment, formatted — show them with the price, never hide them. [] when none. */
+  /** Additional fees charged with the first payment, formatted. Not shown on this site's plan surfaces (checkout shows the total); kept on the DTO. [] when none. */
   fees: PlanFee[];
   /** Free-trial length in days (null when the plan has none). */
   freeTrialDays: number | null;

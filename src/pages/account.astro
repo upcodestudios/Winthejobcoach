@@ -1,9 +1,18 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
+import PageHeader from "../components/site/PageHeader.astro";
 import AccountDashboard from "../components/account/AccountDashboard";
+import logoWhite from "../assets/brand/logo-white.webp";
 ---
 
 <SiteLayout title="My Account | Win The Job" description="Your coaching packages, credits left and upcoming sessions with Nick Fennell.">
-  <h1 class="mb-8 text-2xl font-semibold tracking-tight">My account</h1>
-  <AccountDashboard client:only="react" />
+  <PageHeader
+    logo={logoWhite}
+    eyebrow="Your account"
+    title="My account"
+    lede="Your coaching packages, credits left and upcoming sessions — all in one place."
+  />
+  <div class="mx-auto max-w-7xl px-6 py-14">
+    <AccountDashboard client:only="react" />
+  </div>
 </SiteLayout>

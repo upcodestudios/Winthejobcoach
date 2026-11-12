@@ -34,12 +34,7 @@ export function PlanCard({ plan, planHref = (slug) => `/plans/${slug}`, LinkComp
         {plan.billing && <span className="ml-1.5 text-sm text-muted-foreground">{plan.billing}</span>}
         {plan.duration && <span className="text-sm text-muted-foreground"> · valid {plan.duration}</span>}
       </p>
-      {/* Fees are part of the price — under it, before the CTA, never hidden. */}
-      {plan.fees.map((fee) => (
-        <p key={fee.name + fee.amount} className="mt-1 text-sm text-muted-foreground">
-          + {fee.amount} {fee.name}
-        </p>
-      ))}
+      {/* The fees line is intentionally not shown here — see PlanTierCard. */}
       {plan.freeTrialDays !== null && (
         <p className="mt-1 text-xs font-medium text-muted-foreground">{plan.freeTrialDays}-day free trial</p>
       )}
