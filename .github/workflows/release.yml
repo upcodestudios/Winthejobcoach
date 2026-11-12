@@ -41,3 +41,20 @@ jobs:
 
       - name: Build and release
         run: npm run build && npm run release
+
+      # `wix release` reports "Site published" even when every page then returns HTTP 500,
+      # so a release only counts as done once the live site actually serves a page.
+      - name: Verify the live site serves
+        run: |
+          url="https://www.winthejobcoach.com/"
+          for attempt in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "Live site is serving ($url returned HTTP 200)"
+              exit 0
+            fi
+            echo "attempt $attempt: $url returned HTTP $code"
+            sleep 15
+          done
+          echo "::error::Release succeeded but $url is not serving (last HTTP $code). The published version is not healthy - check the app logs in the Wix dashboard."
+          exit 1
