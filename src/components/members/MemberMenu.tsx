@@ -30,7 +30,7 @@ export default function MemberMenu({
   if (loading) {
     return (
       <span
-        className="inline-block h-11 w-20 animate-pulse rounded-control bg-secondary"
+        className="inline-block h-8 w-16 animate-pulse rounded-control bg-secondary"
         aria-hidden="true"
       />
     );
@@ -40,7 +40,7 @@ export default function MemberMenu({
     return (
       <a
         href="/login"
-        className="inline-flex h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground no-underline transition-colors hover:bg-primary/90"
+        className="rounded-control bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
       >
         Log in
       </a>
