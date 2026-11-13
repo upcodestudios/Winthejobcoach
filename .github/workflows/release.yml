@@ -1,0 +1,43 @@
+name: Release to Wix
+
+# Publishes the site to Wix hosting whenever main changes, so nobody has to run
+# `wix release` locally. Requires one repository secret:
+#   WIX_API_KEY — from the Wix dashboard (Settings -> API keys), created by an
+#                 account that can manage site 4391c874-55db-4e24-8bd8-f3e4fd28ff9a
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: wix-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Sign in to Wix
+        run: npx wix login --api-key "$WIX_API_KEY"
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+
+      # Site environment variables come from Wix itself, so they never live in git.
+      - name: Pull environment variables
+        run: npx wix env pull
+
+      - name: Build and release
+        run: npm run build && npm run release
